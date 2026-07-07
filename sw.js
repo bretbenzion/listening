@@ -1,15 +1,11 @@
-// Bump this on every deploy that changes cached files, so clients pick up the update.
+// Programme Notes — offline cache
+// Because the whole app (CSS, JS, manifest, icons) is inlined into index.html,
+// caching that one document is enough to make the app work offline.
+//
+// Bump CACHE_VERSION whenever you redeploy index.html so returning visitors
+// get the new copy instead of a stale cached one.
 const CACHE_VERSION = "programme-notes-v1";
-const APP_SHELL = [
-  "./",
-  "./index.html",
-  "./style.css",
-  "./app.js",
-  "./manifest.json",
-  "./icons/icon-192.png",
-  "./icons/icon-512.png",
-  "./icons/apple-touch-icon.png"
-];
+const APP_SHELL = ["./", "./index.html"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -27,8 +23,8 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
-// Cache-first for app shell, falling back to network; network requests that
-// succeed are stashed for next time so the app keeps working offline.
+// Cache-first, falling back to network; successful network responses are
+// stashed for next time so the app keeps working with no connection.
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
 
