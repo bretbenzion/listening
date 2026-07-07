@@ -4,7 +4,7 @@
 //
 // Bump CACHE_VERSION whenever you redeploy index.html so returning visitors
 // get the new copy instead of a stale cached one.
-const CACHE_VERSION = "programme-notes-v1";
+const CACHE_VERSION = "programme-notes-v2";
 const APP_SHELL = ["./", "./index.html"];
 
 self.addEventListener("install", (event) => {
