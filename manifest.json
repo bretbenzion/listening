@@ -1,139 +1,17 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Programme Notes — a classical listening journal</title>
-<meta name="description" content="A private journal for classical music: composers, works, and movements, with your ratings and impressions." />
-
-<meta name="theme-color" content="#17161A" />
-<link rel="manifest" href="manifest.json" />
-<link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png" />
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="apple-mobile-web-app-title" content="Programme Notes" />
-
-<link rel="stylesheet" href="style.css" />
-</head>
-<body>
-
-<div id="app">
-
-  <header class="topbar">
-    <div class="brand">
-      <div class="brand-title">Programme Notes<small>a listening journal</small></div>
-    </div>
-    <div class="topbar-actions">
-      <button class="btn btn-ghost" id="btn-import" title="Import a JSON backup">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <span class="btn-label">Import</span>
-      </button>
-      <button class="btn btn-ghost" id="btn-export" title="Export a JSON backup">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15V3m0 0l-4 4m4-4l4 4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <span class="btn-label">Export</span>
-      </button>
-      <button class="btn btn-primary" id="btn-add" title="Add a new listening entry">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
-        <span class="btn-label">Add entry</span>
-      </button>
-    </div>
-    <input type="file" id="file-import" accept="application/json,.json" class="visually-hidden" />
-  </header>
-
-  <div class="layout" id="layout">
-
-    <aside class="sidebar">
-      <div class="search-wrap">
-        <input type="text" id="search" class="search-input" placeholder="Search composers, works, movements…" />
-      </div>
-      <nav class="tree" id="tree" aria-label="Your library"></nav>
-    </aside>
-
-    <main class="detail" id="detail"></main>
-
-  </div>
-</div>
-
-<!-- Add / edit entry modal -->
-<div class="modal-backdrop visually-hidden" id="entry-modal-backdrop">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="entry-modal-title">
-    <div class="modal-header">
-      <h2 class="modal-title" id="entry-modal-title">New listening entry</h2>
-      <button class="modal-close" id="entry-modal-close" aria-label="Close">&times;</button>
-    </div>
-
-    <form id="entry-form" class="form-grid">
-      <input type="hidden" id="entry-id" />
-
-      <div class="field-row">
-        <div class="field">
-          <label for="entry-composer">Composer</label>
-          <input type="text" id="entry-composer" list="composer-list" placeholder="e.g. Dmitri Shostakovich" required />
-          <datalist id="composer-list"></datalist>
-        </div>
-        <div class="field">
-          <label for="entry-work">Piece</label>
-          <input type="text" id="entry-work" list="work-list" placeholder="e.g. String Quartet No. 8" required />
-          <datalist id="work-list"></datalist>
-        </div>
-      </div>
-
-      <div class="field">
-        <label for="entry-movement">Movement <span style="text-transform:none;letter-spacing:0;">(optional)</span></label>
-        <input type="text" id="entry-movement" placeholder="e.g. II. Allegro molto — leave blank for a whole-work note" />
-        <div class="field-hint">Add one entry per movement if you're listening movement by movement, or leave this blank for a note on the piece as a whole.</div>
-      </div>
-
-      <div class="field">
-        <label>Rating</label>
-        <div class="rating-picker" id="rating-picker"></div>
-      </div>
-
-      <div class="field-row">
-        <div class="field">
-          <label for="entry-date">Date listened</label>
-          <input type="date" id="entry-date" />
-        </div>
-      </div>
-
-      <div class="field">
-        <label for="entry-notes">Your impressions</label>
-        <textarea id="entry-notes" placeholder="What did you notice? How did it feel? What stood out on this listen?"></textarea>
-      </div>
-
-      <div class="form-actions">
-        <button type="submit" class="btn btn-primary">Save entry</button>
-        <button type="button" class="btn btn-ghost" id="entry-cancel">Cancel</button>
-        <button type="button" class="btn btn-danger" id="entry-delete" style="margin-left:auto;display:none;">Delete entry</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- Import choice modal -->
-<div class="modal-backdrop visually-hidden" id="import-modal-backdrop">
-  <div class="modal modal-sm" role="dialog" aria-modal="true" aria-labelledby="import-modal-title">
-    <div class="modal-header">
-      <h2 class="modal-title" id="import-modal-title">Import backup</h2>
-      <button class="modal-close" id="import-modal-close" aria-label="Close">&times;</button>
-    </div>
-    <p id="import-summary">A backup file is ready to import.</p>
-    <div class="modal-choice-row">
-      <button class="modal-choice" id="import-merge">
-        <strong>Merge with current library</strong>
-        <span>Adds entries from the file. Entries with the same ID overwrite existing ones.</span>
-      </button>
-      <button class="modal-choice" id="import-replace">
-        <strong>Replace current library</strong>
-        <span>Erases everything currently stored here and loads the file instead.</span>
-      </button>
-    </div>
-  </div>
-</div>
-
-<div id="toast" class="toast visually-hidden"></div>
-
-<script src="app.js"></script>
-</body>
-</html>
+{
+  "name": "Programme Notes",
+  "short_name": "Programme Notes",
+  "description": "A listening journal for classical music — composers, works, and movements.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#FFFFFF",
+  "orientation": "any",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
